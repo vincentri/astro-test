@@ -1,6 +1,6 @@
 # Astro Test
 ## How to run
-1. Pull the test from https://github.com/vincentri/astro-test
+1. Pull the test from https://github.com/vincentri/astro-test. `git clone git@github.com:vincentri/astro-test.git`
 2. Run `pnpm install` or `npm install`
 3. Run `pnpm start`
 4. It will print the json for final value of each stream.
