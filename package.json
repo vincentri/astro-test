@@ -1,0 +1,17 @@
+{
+  "name": "astro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx ts-node index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vincent",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
