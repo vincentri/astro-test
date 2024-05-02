@@ -28,3 +28,4 @@ masterStreamType.map((m) => {
 
 const stream = new Stream(listOfStreamToPromote, 2000, 5000, 5);
 stream.startAdvertise();
+console.log(stream.listOfStreamType())

@@ -29,11 +29,13 @@ class Stream {
     return this.streamType;
   }
 
-  getRandomConsumeBudget() {
-    return Math.floor(
+  getRandomConsumeBudget(): number {
+    let randomNumber = Math.floor(
       Math.random() * (this.endConsumeBetween - this.startConsumeBetween + 1) +
         this.startConsumeBetween
     );
+
+    return randomNumber;
   }
 
   startAdvertise() {
@@ -58,10 +60,13 @@ class Stream {
         const shouldRebalance = stream.isShouldRebalance(
           this.minimumPercentageToRebalance
         );
+
         if (shouldRebalance) {
-          this.rebalanceStreamType(stream);
-          this.totalRebalance += 1;
-          history.isRebalance = true;
+          const isRebalance = this.rebalanceStreamType();
+          if (isRebalance) {
+            this.totalRebalance += 1;
+            history.isRebalance = true;
+          }
         }
 
         this.streamHistory.push(history);
@@ -71,40 +76,37 @@ class Stream {
         break;
       }
     }
-    console.log(this.totalRebalance);
-    console.log(this.streamType);
-    console.table(this.streamHistory);
+    // console.log(this.totalRebalance);
+    // console.log(this.streamType);
+
+    // to print history for calculate manual
+    // console.table(this.streamHistory);
   }
 
-  rebalanceStreamType(streamType: StreamType) {
+  rebalanceStreamType(): boolean {
     // ii. Check if all stream have balance of less than 5% OR have balance of 5% or more, do nothing.
-    const checkAllStreamBalanceInPercentage = this.streamType.filter(
+    const checkBothLessThenThreshold = this.streamType.filter(
       (stream) =>
-        stream.getName() != streamType.getName() &&
-        stream.getRemaningBudgetInPercentage() <
-          this.minimumPercentageToRebalance
+        stream.getRemaningBudgetInPercentage() <=
+        this.minimumPercentageToRebalance
+    );
+
+    const checkBothMoreThenThreshold = this.streamType.filter(
+      (stream) =>
+        stream.getRemaningBudgetInPercentage() >=
+        this.minimumPercentageToRebalance
     );
 
     if (
-      checkAllStreamBalanceInPercentage.length ==
-      this.streamType.length - 1
+      checkBothLessThenThreshold.length == this.streamType.length ||
+      checkBothMoreThenThreshold.length == this.streamType.length
     ) {
-      return;
+      return false;
     }
 
-    let totalAvailablebudget = this.streamType.reduce(
-      (prev, next) => prev + next.getRunningBudget(),
-      0
-    );
-    const totalOverUseBudget = this.streamType.reduce(
-      (prev, next) => prev + next.getOverUseRunningBudget(),
-      0
-    );
-
-    if (totalAvailablebudget <= 0) {
-      console.log(totalAvailablebudget);
-      return;
-    }
+    // if (streamType.getRemaningBudgetInPercentage())
+    let totalAvailablebudget = this.getTotalAvailableBudget();
+    const totalOverUseBudget = this.getTotalOverUseBudget();
 
     let totalBudgetToRebalance = totalAvailablebudget - totalOverUseBudget;
 
@@ -112,7 +114,6 @@ class Stream {
       .filter((stream) => stream.getOverUseRunningBudget() > 0)
       .forEach((stream) => {
         const currentStreamOverBudget = stream.getOverUseRunningBudget();
-        if (totalAvailablebudget <= 0) return;
 
         stream.setOverUseRunningBudget(
           currentStreamOverBudget > totalAvailablebudget
@@ -126,6 +127,7 @@ class Stream {
 
     if (totalBudgetToRebalance > 0)
       this.spreadBudgetToStream(totalBudgetToRebalance);
+    return true;
   }
 
   spreadBudgetToStream(totalBudgetToRebalance: number) {
@@ -144,6 +146,20 @@ class Stream {
     return (
       this.streamType.filter((stream) => stream.isOutOfBudget()).length ==
       this.streamType.length
+    );
+  }
+
+  getTotalAvailableBudget() {
+    return this.streamType.reduce(
+      (prev, next) => prev + next.getRunningBudget(),
+      0
+    );
+  }
+
+  getTotalOverUseBudget() {
+    return this.streamType.reduce(
+      (prev, next) => prev + next.getOverUseRunningBudget(),
+      0
     );
   }
 }
